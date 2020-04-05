@@ -1,8 +1,10 @@
+#code for testing model
 import keras
 import numpy as np
 import cv2
 from Utils_model import VGG_LOSS
 
+#changes shape of model
 def change_model(model,new_shape=(None,384,384,3)):
     model._layers[0].batch_input_shape=new_shape
     new_model=keras.models.model_from_json(model.to_json())
@@ -42,19 +44,21 @@ def upscale():
     cv2.imwrite("sr.jpg",output)
 
 # upscale()
-loss = VGG_LOSS((384,384,3))  
+loss = VGG_LOSS((384,384,3))
+#load the model 4x  
 model = keras.models.load_model( 'gen_model500.h5', custom_objects={'vgg_loss': loss.vgg_loss})
+#change shape of model as per requirement i.e. resolution of input image
 model=change_model(model,new_shape=(None,96,96,3))
 
 # print(model.summary())
 
-img=cv2.imread("lr.jpg")
-img=(img.astype(np.float32) - 127.5)/127.5 
-output=model.predict(np.expand_dims(img, axis=0))
-print(output)
+img=cv2.imread("lr.jpg")#read image
+img=(img.astype(np.float32) - 127.5)/127.5#normalize (-1 to 1) 
+output=model.predict(np.expand_dims(img, axis=0))#predict the output
+#print(output)
 output=output[0]
 print(output.shape)
-output= (output + 1) * 127.5
+output= (output + 1) * 127.5#denormalize
 output= output.astype(np.uint8)
-print(output)
-cv2.imwrite("sr_500.jpg",output)
+#print(output)
+cv2.imwrite("sr_500.jpg",output)#save upscaled output
